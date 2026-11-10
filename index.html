@@ -1,0 +1,406 @@
+<!doctype html>
+<html lang="el">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="description" content="Διαδραστικός planner διαφήμισης για το eshop.karidi.gr">
+<style>
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;font-size:14px;-webkit-text-size-adjust:100%}
+img{max-width:100%}
+[hidden]{display:none!important}
+</style>
+<title>Πλάνο Διαφήμισης Κτήματα Γκόνου</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Commissioner:wght@500;650;800&family=Inter:wght@400;500;600&display=swap">
+<style>
+/* Layout: two-pane planner — sticky control column (inputs) beside live results; phased plan + checklists below */
+:root{
+  --bg:#F5F7F1; --surface:#FFFFFF; --ink:#1E281C; --muted:#5C6A58; --line:#DCE2D4;
+  --accent:#4C6A2C; --accent-soft:#E6EDDA; --shell:#8C5A28; --shell-soft:#F3E8DA;
+  --good:#2F7A3C; --warn:#A86A00; --bad:#B23A2E;
+  --f-display:"Commissioner","Segoe UI",system-ui,sans-serif;
+  --f-body:"Inter","Segoe UI",system-ui,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#111511; --surface:#192019; --ink:#E7ECE2; --muted:#9BA696; --line:#2B352A;
+  --accent:#9CC06A; --accent-soft:#243220; --shell:#D9A064; --shell-soft:#33271A;
+  --good:#6CC27A; --warn:#E3A93B; --bad:#EE7B6E; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#111511; --surface:#192019; --ink:#E7ECE2; --muted:#9BA696; --line:#2B352A;
+  --accent:#9CC06A; --accent-soft:#243220; --shell:#D9A064; --shell-soft:#33271A;
+  --good:#6CC27A; --warn:#E3A93B; --bad:#EE7B6E; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.55}
+.wrap{max-width:1180px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:28px 60px}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;margin:0;letter-spacing:-.01em}
+h1{font-size:clamp(26px,4vw,38px);font-weight:800}
+h2{font-size:22px;font-weight:800}
+h3{font-size:16px;font-weight:650}
+.eyebrow{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);font-weight:600}
+.lede{color:var(--muted);max-width:68ch;margin:8px 0 0}
+header{display:flex;flex-direction:column;gap:6px;margin-bottom:24px}
+.grid{display:grid;grid-template-columns:340px 1fr;gap:24px;align-items:start}
+@media (max-width:880px){.grid{grid-template-columns:1fr}}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:20px}
+.controls{position:sticky;top:calc(env(safe-area-inset-top,0px) + 12px);display:flex;flex-direction:column;gap:18px}
+@media (max-width:880px){.controls{position:static}}
+.field{display:flex;flex-direction:column;gap:6px}
+.field label,.lbl{font-size:13px;font-weight:600;display:flex;justify-content:space-between;gap:8px}
+.field label output{font-variant-numeric:tabular-nums;color:var(--accent);font-weight:600}
+input[type=range]{width:100%;accent-color:var(--accent)}
+input[type=number],input[type=date],select{width:100%;font:inherit;padding:8px 10px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--ink)}
+input:focus-visible,select:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font:inherit;font-size:13px;padding:5px 11px;border-radius:99px;border:1px solid var(--line);background:var(--bg);color:var(--ink);cursor:pointer}
+.chip[aria-pressed=true]{background:var(--accent);color:var(--surface);border-color:var(--accent)}
+.seg{display:grid;grid-template-columns:repeat(3,1fr);border:1px solid var(--line);border-radius:9px;overflow:hidden}
+.seg button{font:inherit;font-size:13px;padding:7px 4px;border:0;background:var(--bg);color:var(--ink);cursor:pointer}
+.seg button+button{border-left:1px solid var(--line)}
+.seg button[aria-pressed=true]{background:var(--accent-soft);color:var(--accent);font-weight:600}
+.hint{font-size:12px;color:var(--muted)}
+.mix{display:flex;height:10px;border-radius:99px;overflow:hidden;background:var(--line)}
+.mix span{display:block;height:100%}
+details summary{cursor:pointer;font-weight:600;font-size:13px}
+.adv{display:grid;grid-template-columns:auto repeat(3,1fr);gap:6px;align-items:center;margin-top:10px;font-size:12px}
+.adv input{padding:5px 6px;font-size:12px}
+.results{display:flex;flex-direction:column;gap:20px;min-width:0}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+@media (max-width:600px){.kpis{grid-template-columns:repeat(2,1fr)}}
+.kpi{background:var(--surface);padding:14px 16px;display:flex;flex-direction:column;gap:2px}
+.kpi .k{font-size:12px;color:var(--muted);letter-spacing:.02em}
+.kpi .v{font-family:var(--f-display);font-size:24px;font-weight:800;font-variant-numeric:tabular-nums}
+.kpi .s{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+.verdict{display:flex;gap:12px;align-items:flex-start;padding:14px 16px;border-radius:12px;border:1px solid var(--line);background:var(--surface)}
+.pill{flex:none;font-size:12px;font-weight:600;padding:3px 10px;border-radius:99px;color:var(--surface)}
+.tbl-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:14px;font-variant-numeric:tabular-nums}
+th,td{text-align:right;padding:9px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+th:first-child,td:first-child{text-align:left}
+th{font-size:12px;color:var(--muted);font-weight:600}
+tfoot td{font-weight:700;border-bottom:0}
+.dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:7px;vertical-align:1px}
+.warns{display:flex;flex-direction:column;gap:6px;margin:0;padding:0;list-style:none}
+.warns li{font-size:13px;padding:8px 12px;border-radius:8px;background:var(--shell-soft);color:var(--ink);border-left:3px solid var(--warn)}
+.chart-head{display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:8px;margin-bottom:10px}
+.legend{display:flex;gap:14px;font-size:12px;color:var(--muted)}
+.legend i{display:inline-block;width:14px;height:3px;border-radius:2px;margin-right:6px;vertical-align:3px}
+svg text{fill:var(--muted);font-size:11px;font-family:var(--f-body)}
+section.block{margin-top:40px;display:flex;flex-direction:column;gap:16px}
+.phases{display:grid;gap:12px}
+.phase{display:grid;grid-template-columns:150px 1fr;gap:16px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px}
+@media (max-width:640px){.phase{grid-template-columns:1fr;gap:8px}}
+.phase .when{display:flex;flex-direction:column;gap:2px}
+.phase .when b{font-family:var(--f-display);font-size:15px}
+.phase .when span{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+.phase .when .amt{color:var(--accent);font-weight:600}
+.phase ul{margin:6px 0 0;padding-left:18px}
+.phase li{margin:3px 0}
+.cols{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+@media (max-width:860px){.cols{grid-template-columns:1fr}}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px;min-width:0}
+.card ul{margin:8px 0 0;padding-left:18px}
+.card li{margin:4px 0}
+.kw{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.kw span{font-size:12.5px;padding:3px 9px;border-radius:6px;background:var(--accent-soft);color:var(--ink)}
+.check{list-style:none;padding:0;margin:0;display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+@media (max-width:700px){.check{grid-template-columns:1fr}}
+.check label{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;background:var(--surface);border:1px solid var(--line);border-radius:10px;cursor:pointer;font-size:14px}
+.check input{margin-top:3px;accent-color:var(--accent)}
+.check small{display:block;color:var(--muted);font-size:12px}
+.note{font-size:12.5px;color:var(--muted);max-width:80ch}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <span class="eyebrow">eshop.karidi.gr · karidi.gr</span>
+  <h1>Πλάνο χορηγούμενης διαφήμισης</h1>
+  <p class="lede">Βάλε ποσό, διάρκεια και κατανομή ανά κανάλι. Οι εκτιμήσεις για επισκέψεις, παραγγελίες, τζίρο και κέρδος ενημερώνονται αμέσως, όπως και το χρονοδιάγραμμα από κάτω.</p>
+</header>
+
+<div class="grid">
+  <aside class="panel controls" aria-label="Παράμετροι">
+    <div class="field">
+      <label for="budget">Συνολικός προϋπολογισμός <output id="budgetOut"></output></label>
+      <input type="range" id="budget" min="150" max="10000" step="50" value="1500">
+      <div class="chips" id="budgetChips"></div>
+    </div>
+    <div class="field">
+      <label for="days">Διάρκεια καμπάνιας <output id="daysOut"></output></label>
+      <input type="range" id="days" min="7" max="120" step="1" value="45">
+      <span class="hint" id="dailyHint"></span>
+    </div>
+    <div class="field">
+      <label for="start">Ημερομηνία έναρξης</label>
+      <input type="date" id="start" value="2026-11-12">
+    </div>
+    <div class="field">
+      <span class="lbl">Σενάριο</span>
+      <div class="seg" id="scenario">
+        <button type="button" data-v="low">Συντηρητικό</button>
+        <button type="button" data-v="mid" aria-pressed="true">Ρεαλιστικό</button>
+        <button type="button" data-v="high">Αισιόδοξο</button>
+      </div>
+    </div>
+    <div class="field">
+      <span class="lbl">Περίοδος</span>
+      <div class="seg" id="season">
+        <button type="button" data-v="normal">Κανονική</button>
+        <button type="button" data-v="xmas" aria-pressed="true">Χριστούγεννα</button>
+        <button type="button" data-v="summer">Καλοκαίρι</button>
+      </div>
+    </div>
+
+    <div class="field">
+      <span class="lbl">Κατανομή ανά κανάλι</span>
+      <div class="mix" id="mixBar"></div>
+      <label for="wMeta"><span><span class="dot" style="background:var(--accent)"></span>Meta (Facebook/Instagram)</span><output id="wMetaOut"></output></label>
+      <input type="range" id="wMeta" min="0" max="100" value="55">
+      <label for="wGoogle"><span><span class="dot" style="background:var(--shell)"></span>Google (Search + Shopping)</span><output id="wGoogleOut"></output></label>
+      <input type="range" id="wGoogle" min="0" max="100" value="45">
+      <label for="wTik"><span><span class="dot" style="background:var(--muted)"></span>TikTok</span><output id="wTikOut"></output></label>
+      <input type="range" id="wTik" min="0" max="100" value="0">
+    </div>
+
+    <div class="field">
+      <label for="aov">Μέση αξία παραγγελίας (€)</label>
+      <input type="number" id="aov" min="5" max="300" step="0.5" value="24">
+      <span class="hint">Με τιμές €4,50–16, ένα καλάθι 2–3 προϊόντων βγαίνει ~€20–30.</span>
+    </div>
+    <div class="field">
+      <label for="margin">Μικτό περιθώριο μετά τα μεταφορικά <output id="marginOut"></output></label>
+      <input type="range" id="margin" min="10" max="80" value="45">
+    </div>
+    <div class="field">
+      <label for="repeat">Πελάτες που ξαναγοράζουν σε 6 μήνες <output id="repeatOut"></output></label>
+      <input type="range" id="repeat" min="0" max="60" value="25">
+    </div>
+
+    <details>
+      <summary>Παραδοχές ανά κανάλι (για προχωρημένους)</summary>
+      <div class="adv" id="adv">
+        <span></span><b>Meta</b><b>Google</b><b>TikTok</b>
+        <span>CPC €</span>
+        <input type="number" step="0.01" id="cpc_meta" value="0.32" aria-label="CPC Meta">
+        <input type="number" step="0.01" id="cpc_google" value="0.38" aria-label="CPC Google">
+        <input type="number" step="0.01" id="cpc_tik" value="0.28" aria-label="CPC TikTok">
+        <span>CTR %</span>
+        <input type="number" step="0.1" id="ctr_meta" value="1.2" aria-label="CTR Meta">
+        <input type="number" step="0.1" id="ctr_google" value="4.5" aria-label="CTR Google">
+        <input type="number" step="0.1" id="ctr_tik" value="0.8" aria-label="CTR TikTok">
+        <span>Conv. %</span>
+        <input type="number" step="0.1" id="cvr_meta" value="1.3" aria-label="Conversion Meta">
+        <input type="number" step="0.1" id="cvr_google" value="2.6" aria-label="Conversion Google">
+        <input type="number" step="0.1" id="cvr_tik" value="0.6" aria-label="Conversion TikTok">
+      </div>
+      <p class="hint" style="margin-top:8px">Μέσες τιμές για ελληνικά e-shop τροφίμων/gourmet. Μετά τις 2 πρώτες εβδομάδες βάλε εδώ τα πραγματικά σου νούμερα από το Ads Manager.</p>
+    </details>
+  </aside>
+
+  <main class="results">
+    <div class="kpis">
+      <div class="kpi"><span class="k">Παραγγελίες</span><span class="v" id="kOrders"></span><span class="s" id="kOrdersS"></span></div>
+      <div class="kpi"><span class="k">Τζίρος από ads</span><span class="v" id="kRev"></span><span class="s" id="kRevS"></span></div>
+      <div class="kpi"><span class="k">ROAS</span><span class="v" id="kRoas"></span><span class="s" id="kRoasS"></span></div>
+      <div class="kpi"><span class="k">Καθαρό αποτέλεσμα</span><span class="v" id="kProfit"></span><span class="s" id="kProfitS"></span></div>
+    </div>
+
+    <div class="verdict" id="verdict"><span class="pill" id="vPill"></span><span id="vText"></span></div>
+
+    <div class="panel">
+      <div class="chart-head">
+        <h3>Σωρευτικά: δαπάνη και τζίρος ανά ημέρα</h3>
+        <div class="legend"><span><i style="background:var(--muted)"></i>Δαπάνη</span><span><i style="background:var(--shell)"></i>Τζίρος</span><span><i style="background:var(--accent)"></i>Μικτό κέρδος</span></div>
+      </div>
+      <div id="chart"></div>
+      <p class="hint" style="margin:8px 0 0">Οι πρώτες 7–14 μέρες αποδίδουν λιγότερο γιατί οι αλγόριθμοι βρίσκονται σε φάση μάθησης.</p>
+    </div>
+
+    <div class="panel">
+      <h3 style="margin-bottom:10px">Ανά κανάλι</h3>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>Κανάλι</th><th>Ποσό</th><th>€/ημέρα</th><th>Εμφανίσεις</th><th>Κλικ</th><th>Παραγγ.</th><th>Τζίρος</th><th>CPA</th><th>ROAS</th></tr></thead>
+        <tbody id="tbody"></tbody>
+        <tfoot id="tfoot"></tfoot>
+      </table></div>
+    </div>
+
+    <ul class="warns" id="warns"></ul>
+  </main>
+</div>
+
+<section class="block">
+  <div><span class="eyebrow">Χρονοδιάγραμμα</span><h2>Από την προετοιμασία μέχρι την κλιμάκωση</h2>
+  <p class="lede">Οι φάσεις και τα ποσά προσαρμόζονται στη διάρκεια και στον προϋπολογισμό που έχεις επιλέξει.</p></div>
+  <div class="phases" id="phases"></div>
+</section>
+
+<section class="block">
+  <div><span class="eyebrow">Στόχευση &amp; δημιουργικά</span><h2>Τι να τρέξεις σε κάθε κανάλι</h2></div>
+  <div class="cols">
+    <div class="card">
+      <h3><span class="dot" style="background:var(--accent)"></span>Meta</h3>
+      <ul>
+        <li><b>Καμπάνια Sales (Advantage+)</b> με Pixel + Conversions API από το Shopify.</li>
+        <li><b>Κοινό ψυχρό:</b> Ελλάδα, 28–60, ενδιαφέροντα ζαχαροπλαστική, υγιεινή διατροφή, βιολογικά, gourmet, μαγειρική.</li>
+        <li><b>Retargeting:</b> επισκέπτες 30 ημερών, προσθήκες στο καλάθι 14 ημερών, θεατές βίντεο 50%.</li>
+        <li><b>Δημιουργικά:</b> βίντεο από το κτήμα (συγκομιδή, σπάσιμο), οικογένεια από το 1975, Reels με συνταγή μελομακάρονων, φωτογραφία βουτύρου καρυδιού στο ψωμί.</li>
+        <li>3–5 δημιουργικά ανά ad set, αλλαγή όσων έχουν CTR κάτω από 0,8% μετά από 7 μέρες.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3><span class="dot" style="background:var(--shell)"></span>Google</h3>
+      <ul>
+        <li><b>Shopping / Performance Max</b> μέσω Google Merchant Center (σύνδεση με το Shopify app της Google).</li>
+        <li><b>Search</b> με ακριβείς λέξεις κλειδιά υψηλής πρόθεσης.</li>
+        <li><b>Ξεχωριστή καμπάνια B2B</b> για το karidi.gr (χονδρική), με στόχο τηλεφώνημα ή φόρμα.</li>
+      </ul>
+      <div class="kw">
+        <span>καρυδόψιχα</span><span>καρύδια χονδρική</span><span>ελληνικά καρύδια</span><span>βούτυρο καρυδιού</span><span>καρυδέλαιο</span><span>καρύδια για μελομακάρονα</span><span>καρύδια νέας σοδειάς</span><span>καρύδια με κέλυφος τιμή</span>
+      </div>
+      <p class="hint" style="margin-top:8px">Αρνητικές: συνταγή, θερμίδες, δέντρο, φύτευση, αλλεργία.</p>
+    </div>
+    <div class="card">
+      <h3><span class="dot" style="background:var(--muted)"></span>TikTok</h3>
+      <ul>
+        <li>Κυρίως για αναγνωρισιμότητα και φθηνές προβολές βίντεο, όχι για άμεσες πωλήσεις.</li>
+        <li>Περιεχόμενο τύπου «από το χωράφι στο βάζο», ASMR σπάσιμο καρυδιών, γρήγορες συνταγές.</li>
+        <li>Spark Ads: ενίσχυσε τα οργανικά βίντεο που ήδη πάνε καλά.</li>
+        <li>Αν το budget είναι κάτω από ~€600, βάλε 0% εδώ και δυνάμωσε το Meta.</li>
+      </ul>
+    </div>
+  </div>
+  <div class="card">
+    <h3>Προσφορές που ανεβάζουν την αξία παραγγελίας</h3>
+    <ul>
+      <li><b>Χριστουγεννιάτικο κουτί δώρου</b> (καρυδόψιχα + βούτυρο καρυδιού με σοκολάτα + καρυδέλαιο) στα €25–30. Τα δώρα σε εταιρείες είναι επιπλέον ευκαιρία για το B2B.</li>
+      <li><b>Πακέτο «Γιορτινή ζαχαροπλαστική»</b>: 1 κιλό καρυδόψιχα για μελομακάρονα και κουραμπιέδες.</li>
+      <li><b>Κωδικός πρώτης αγοράς</b> 10% μόνο για το retargeting, ώστε να μη χαρίζεις έκπτωση σε όσους θα αγόραζαν ούτως ή άλλως.</li>
+      <li><b>Email μετά την αγορά</b> (Shopify Email, δωρεάν έως 10.000/μήνα) με υπενθύμιση επαναγοράς στις 45 μέρες.</li>
+    </ul>
+  </div>
+</section>
+
+<section class="block">
+  <div><span class="eyebrow">Πριν πατήσεις «Δημοσίευση»</span><h2>Λίστα ελέγχου</h2>
+  <p class="lede">Οι επιλογές σου αποθηκεύονται σε αυτόν τον browser.</p></div>
+  <ul class="check" id="checklist"></ul>
+</section>
+
+<section class="block">
+  <div><span class="eyebrow">Μέτρηση</span><h2>Ποια νούμερα κοιτάς κάθε εβδομάδα</h2></div>
+  <div class="cols">
+    <div class="card"><h3>Ροή επισκεπτών</h3><ul><li>CTR Meta &gt; 1%, Google Search &gt; 4%</li><li>CPC κάτω από €0,45</li><li>Συχνότητα Meta κάτω από 3 στο ψυχρό κοινό</li></ul></div>
+    <div class="card"><h3>Μετατροπή</h3><ul><li>Προσθήκη στο καλάθι &gt; 5% των επισκέψεων</li><li>Ολοκλήρωση αγοράς &gt; 40% των καλαθιών</li><li>Conversion rate συνολικά &gt; 1,2%</li></ul></div>
+    <div class="card"><h3>Κερδοφορία</h3><ul><li>ROAS πάνω από το νεκρό σημείο (φαίνεται πάνω)</li><li>CPA κάτω από τη μικτή αξία μιας παραγγελίας</li><li>Ποσοστό επαναγοράς στις 60 μέρες</li></ul></div>
+  </div>
+  <p class="note">Όλα τα αποτελέσματα είναι εκτιμήσεις με βάση μέσους δείκτες της αγοράς και τις παραδοχές που ορίζεις. Τα πραγματικά νούμερα εξαρτώνται από τα δημιουργικά, τις τιμές, την εμπειρία του e-shop και τον ανταγωνισμό. Μετά από 14 μέρες, πέρασε τα δικά σου CPC/CTR/Conversion στις παραδοχές για να γίνει η πρόβλεψη πολύ πιο ακριβής.</p>
+</section>
+</div>
+
+<script>
+(function(){
+const $=id=>document.getElementById(id);
+const eur=(v,d=0)=>'€'+v.toLocaleString('el-GR',{minimumFractionDigits:d,maximumFractionDigits:d});
+const num=v=>Math.round(v).toLocaleString('el-GR');
+const SCEN={low:{cpc:1.25,cvr:.7},mid:{cpc:1,cvr:1},high:{cpc:.88,cvr:1.3}};
+const SEAS={normal:{cpc:1,cvr:1,aov:1,label:'κανονική περίοδο'},xmas:{cpc:1.2,cvr:1.35,aov:1.15,label:'περίοδο Χριστουγέννων'},summer:{cpc:.9,cvr:.8,aov:.95,label:'καλοκαίρι'}};
+const CH=[{k:'meta',n:'Meta',c:'var(--accent)',min:5},{k:'google',n:'Google',c:'var(--shell)',min:5},{k:'tik',n:'TikTok',c:'var(--muted)',min:20}];
+let scen='mid',seas='xmas';
+
+[300,800,1500,3000,5000].forEach(v=>{const b=document.createElement('button');b.type='button';b.className='chip';b.textContent=eur(v);b.dataset.v=v;b.onclick=()=>{$('budget').value=v;run()};$('budgetChips').appendChild(b)});
+function seg(id,set){$(id).querySelectorAll('button').forEach(b=>b.onclick=()=>{$(id).querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',x===b));set(b.dataset.v);run()})}
+seg('scenario',v=>scen=v);seg('season',v=>seas=v);
+document.querySelectorAll('input,select').forEach(i=>i.addEventListener('input',run));
+
+const ramp=d=>d<7?0.6:d<14?0.85:1;
+const val=id=>parseFloat($(id).value)||0;
+
+function run(){
+  const B=val('budget'),D=Math.round(val('days')),aov0=val('aov'),m=val('margin')/100,rep=val('repeat')/100;
+  const sc=SCEN[scen],se=SEAS[seas],aov=aov0*se.aov;
+  $('budgetOut').textContent=eur(B);$('daysOut').textContent=D+' ημέρες';$('marginOut').textContent=Math.round(m*100)+'%';$('repeatOut').textContent=Math.round(rep*100)+'%';
+  $('dailyHint').textContent='≈ '+eur(B/D,2)+' την ημέρα συνολικά';
+  document.querySelectorAll('#budgetChips .chip').forEach(c=>c.setAttribute('aria-pressed',+c.dataset.v===B));
+  const w={meta:val('wMeta'),google:val('wGoogle'),tik:val('wTik')},wt=(w.meta+w.google+w.tik)||1;
+  $('mixBar').innerHTML=CH.map(c=>`<span style="width:${w[c.k]/wt*100}%;background:${c.c}"></span>`).join('');
+  CH.forEach(c=>$('w'+(c.k==='meta'?'Meta':c.k==='google'?'Google':'Tik')+'Out').textContent=Math.round(w[c.k]/wt*100)+'%');
+
+  const rows=[],cum=[];let cs=0,cr=0;
+  CH.forEach(c=>{const share=w[c.k]/wt,spend=B*share,daily=spend/D;
+    const cpc=val('cpc_'+c.k)*sc.cpc*se.cpc,ctr=val('ctr_'+c.k)/100,cvr=val('cvr_'+c.k)/100*sc.cvr*se.cvr;
+    let clicks=0,orders=0;for(let d=0;d<D;d++){const cl=daily/cpc;clicks+=cl;orders+=cl*cvr*ramp(d)}
+    rows.push({...c,spend,daily,impr:ctr?clicks/ctr:0,clicks,orders,rev:orders*aov,cpc,cvr})});
+  for(let d=0;d<D;d++){rows.forEach(r=>{cs+=r.daily;cr+=r.daily/r.cpc*r.cvr*ramp(d)*aov});cum.push([cs,cr,cr*m-cs])}
+
+  const T=rows.reduce((a,r)=>({spend:a.spend+r.spend,impr:a.impr+r.impr,clicks:a.clicks+r.clicks,orders:a.orders+r.orders,rev:a.rev+r.rev}),{spend:0,impr:0,clicks:0,orders:0,rev:0});
+  const roas=T.spend?T.rev/T.spend:0,be=1/m,profit=T.rev*m-T.spend,ltv=T.orders*rep*aov*m,cpa=T.orders?T.spend/T.orders:0;
+  $('kOrders').textContent=num(T.orders);$('kOrdersS').textContent=num(T.clicks)+' επισκέψεις · CPA '+eur(cpa,2);
+  $('kRev').textContent=eur(T.rev);$('kRevS').textContent='μέσο καλάθι '+eur(aov,2);
+  $('kRoas').textContent=roas.toFixed(2)+'x';$('kRoasS').textContent='νεκρό σημείο '+be.toFixed(2)+'x';
+  $('kProfit').textContent=(profit<0?'−':'')+eur(Math.abs(profit));$('kProfit').style.color=profit>=0?'var(--good)':'var(--bad)';
+  $('kProfitS').textContent='+ '+eur(ltv)+' από επαναγορές (6μ.)';
+
+  const tot=profit+ltv;let pc,pt,tx;
+  if(profit>=0){pc='var(--good)';pt='Κερδοφόρο';tx=`Με ROAS ${roas.toFixed(2)}x πάνω από το νεκρό σημείο ${be.toFixed(2)}x, η καμπάνια βγάζει κέρδος από την πρώτη παραγγελία. Αν τα νούμερα επιβεβαιωθούν στις 2 πρώτες εβδομάδες, ανέβασε το budget 20% κάθε 4–5 μέρες.`}
+  else if(tot>=0){pc='var(--warn)';pt='Κερδίζει με επαναγορές';tx=`Οι πρώτες παραγγελίες δεν καλύπτουν όλη τη δαπάνη (${eur(profit)}), αλλά με ${Math.round(rep*100)}% επαναγορά η καμπάνια βγαίνει κερδοφόρα στο εξάμηνο (${eur(tot)}). Χτίσε λίστα email και κοινό για retargeting.`}
+  else{pc='var(--bad)';pt='Επένδυση σε αναγνωρισιμότητα';tx=`Σε ${se.label} με αυτές τις παραδοχές η καμπάνια δεν αποσβένεται άμεσα. Δοκίμασε μεγαλύτερο καλάθι (κουτιά δώρου), περισσότερο Google Shopping ή λιγότερο TikTok.`}
+  $('vPill').style.background=pc;$('vPill').textContent=pt;$('vText').textContent=tx;
+
+  $('tbody').innerHTML=rows.filter(r=>r.spend>0).map(r=>`<tr><td><span class="dot" style="background:${r.c}"></span>${r.n}</td><td>${eur(r.spend)}</td><td>${eur(r.daily,2)}</td><td>${num(r.impr)}</td><td>${num(r.clicks)}</td><td>${r.orders.toFixed(1)}</td><td>${eur(r.rev)}</td><td>${r.orders?eur(r.spend/r.orders,2):'–'}</td><td>${(r.rev/r.spend).toFixed(2)}x</td></tr>`).join('');
+  $('tfoot').innerHTML=`<tr><td>Σύνολο</td><td>${eur(T.spend)}</td><td>${eur(T.spend/D,2)}</td><td>${num(T.impr)}</td><td>${num(T.clicks)}</td><td>${T.orders.toFixed(1)}</td><td>${eur(T.rev)}</td><td>${eur(cpa,2)}</td><td>${roas.toFixed(2)}x</td></tr>`;
+
+  const W=[];rows.forEach(r=>{if(r.spend>0&&r.daily<r.min)W.push(`${r.n}: ${eur(r.daily,2)}/ημέρα είναι κάτω από το ελάχιστο που συνιστάται (${eur(r.min)}/ημέρα). Μείωσε τη διάρκεια ή μετέφερε το ποσό σε άλλο κανάλι.`)});
+  if(D<14)W.push('Κάτω από 14 μέρες οι αλγόριθμοι δεν προλαβαίνουν να βγουν από τη φάση μάθησης. Προτίμησε τουλάχιστον 21 μέρες.');
+  if(T.orders/D*7<50&&w.meta>0)W.push(`Με ~${Math.round(T.orders/D*7)} παραγγελίες την εβδομάδα το Meta δεν φτάνει τις 50 μετατροπές/εβδομάδα. Στην αρχή βελτιστοποίησε για «Προσθήκη στο καλάθι» και μετά για «Αγορά».`);
+  if(aov<20)W.push('Με καλάθι κάτω από €20 και δωρεάν αποστολή το περιθώριο στενεύει. Βάλε ελάχιστη παραγγελία για δωρεάν μεταφορικά ή πακέτα.');
+  $('warns').innerHTML=W.map(x=>`<li>${x}</li>`).join('');
+
+  drawChart(cum,D);phases(B,D,rows);
+}
+
+function drawChart(cum,D){
+  const w=Math.max(300,$('chart').clientWidth||600),h=240,pl=52,pr=12,pt=10,pb=26;
+  let mx=0,mn=0;cum.forEach(c=>{mx=Math.max(mx,c[0],c[1]);mn=Math.min(mn,c[2])});
+  const step=niceStep((mx-mn)/4),top=Math.ceil(mx/step)*step,bot=Math.floor(mn/step)*step;
+  const X=i=>pl+(w-pl-pr)*(D<=1?0:i/(D-1)),Y=v=>pt+(h-pt-pb)*(top-v)/((top-bot)||1);
+  let g='';for(let v=bot;v<=top+1e-6;v+=step)g+=`<line x1="${pl}" x2="${w-pr}" y1="${Y(v)}" y2="${Y(v)}" stroke="var(--line)" stroke-width="${v===0?1.5:1}"/><text x="${pl-6}" y="${Y(v)+4}" text-anchor="end">${eur(v)}</text>`;
+  const s=$('start').value?new Date($('start').value):null;
+  [0,Math.floor((D-1)/2),D-1].forEach((i,k)=>{let lb='Ημ. '+(i+1);if(s){const d=new Date(s);d.setDate(d.getDate()+i);lb=d.toLocaleDateString('el-GR',{day:'numeric',month:'short'})}g+=`<text x="${X(i)}" y="${h-6}" text-anchor="${k===0?'start':k===2?'end':'middle'}">${lb}</text>`});
+  const path=j=>cum.map((c,i)=>(i?'L':'M')+X(i).toFixed(1)+','+Y(c[j]).toFixed(1)).join('');
+  const area=`${path(1)}L${X(D-1)},${Y(0)}L${X(0)},${Y(0)}Z`;
+  const last=cum[cum.length-1];
+  $('chart').innerHTML=`<svg width="100%" viewBox="0 0 ${w} ${h}" role="img" aria-label="Σωρευτική δαπάνη και τζίρος"><path d="${area}" fill="var(--shell)" fill-opacity=".12"/>${g}<path d="${path(0)}" fill="none" stroke="var(--muted)" stroke-width="2" stroke-dasharray="5 4"/><path d="${path(1)}" fill="none" stroke="var(--shell)" stroke-width="2.5"/><path d="${path(2)}" fill="none" stroke="var(--accent)" stroke-width="2"/><circle cx="${X(D-1)}" cy="${Y(last[1])}" r="4" fill="var(--shell)"/><circle cx="${X(D-1)}" cy="${Y(last[2])}" r="4" fill="var(--accent)"/></svg>`;
+}
+function niceStep(r){if(r<=0)return 100;const p=Math.pow(10,Math.floor(Math.log10(r))),f=r/p;return(f<=1?1:f<=2?2:f<=5?5:10)*p}
+
+function phases(B,D,rows){
+  const s=$('start').value?new Date($('start').value):new Date();
+  const fmt=o=>{const d=new Date(s);d.setDate(d.getDate()+o);return d.toLocaleDateString('el-GR',{day:'numeric',month:'short'})};
+  const p1=Math.max(3,Math.round(D*.25)),p2=Math.max(p1+2,Math.round(D*.55)),p3=D;
+  const share=(a,b)=>eur(B*(b-a)/D);
+  const has=k=>rows.find(r=>r.k===k&&r.spend>0);
+  const P=[
+    {t:'Φάση 0 · Προετοιμασία',w:`${fmt(-7)} – ${fmt(-1)}`,a:'€0',items:['Εγκατάσταση Meta Pixel + Conversions API μέσω του Facebook & Instagram app του Shopify','Σύνδεση Google Merchant Center και GA4 με το Shopify (Google & YouTube app)','Βελτίωση σελίδων προϊόντων: φωτογραφίες, βάρος, προέλευση (Πέλλα), «νέα σοδειά 2026»','Δημιουργία κουτιών δώρου και κριτικών πελατών (π.χ. app Judge.me)','Γύρισμα 6–10 σύντομων βίντεο στο κτήμα και στη συσκευασία']},
+    {t:'Φάση 1 · Δοκιμή',w:`${fmt(0)} – ${fmt(p1-1)} (${p1} μέρες)`,a:share(0,p1),items:['Τρέχουν όλα τα κανάλια με ίσο ημερήσιο ποσό, χωρίς αλλαγές για 5–7 μέρες',has('meta')?'Meta: 2 κοινά × 3–5 δημιουργικά, βελτιστοποίηση για «Προσθήκη στο καλάθι»':null,has('google')?'Google: Shopping/PMax + Search σε λέξεις υψηλής πρόθεσης':null,has('tik')?'TikTok: 3–4 βίντεο, στόχος προβολές και επισκέψεις':null,'Καταγραφή CTR, CPC, κόστους ανά καλάθι στο τέλος της φάσης'].filter(Boolean)},
+    {t:'Φάση 2 · Βελτιστοποίηση',w:`${fmt(p1)} – ${fmt(p2-1)}`,a:share(p1,p2),items:['Κλείσιμο δημιουργικών με CTR κάτω από 0,8% και διπλασιασμός των καλύτερων','Μεταφορά 20–30% του budget στο κανάλι με το χαμηλότερο CPA','Ενεργοποίηση retargeting (επισκέπτες, καλάθια) με κωδικό πρώτης αγοράς','Meta: αλλαγή στόχου σε «Αγορά» όταν περάσεις τις ~20 αγορές']},
+    {t:'Φάση 3 · Κλιμάκωση',w:`${fmt(p2)} – ${fmt(p3-1)}`,a:share(p2,p3),items:['Αύξηση budget 20% κάθε 4–5 μέρες στα ad sets με ROAS πάνω από το νεκρό σημείο','Lookalike κοινά 1–3% από αγοραστές',seas==='xmas'?'Έμφαση σε δώρα και γιορτινή ζαχαροπλαστική μέχρι ~20 Δεκεμβρίου (τελευταία ασφαλής παράδοση)':'Νέα δημιουργικά κάθε 2 εβδομάδες για να μην κουράζεται το κοινό','Καμπάνια B2B για χονδρική στο karidi.gr (ζαχαροπλαστεία, φούρνοι)']},
+    {t:'Φάση 4 · Διατήρηση πελατών',w:`από ${fmt(p3)}`,a:'Χαμηλό κόστος',items:['Email ευχαριστίας και υπενθύμιση επαναγοράς στις 45 μέρες','Retargeting αγοραστών με νέα προϊόντα (π.χ. βούτυρο με μαύρη σοκολάτα)','Ανάλυση: ποιο κανάλι έφερε τους πελάτες που ξαναγόρασαν','Ενημέρωση των παραδοχών του planner με τα πραγματικά νούμερα']}
+  ];
+  $('phases').innerHTML=P.map(p=>`<div class="phase"><div class="when"><b>${p.t}</b><span>${p.w}</span><span class="amt">${p.a}</span></div><ul>${p.items.map(i=>`<li>${i}</li>`).join('')}</ul></div>`).join('');
+}
+
+const CL=[['Meta Pixel + Conversions API ενεργά','Έλεγχος με Meta Pixel Helper και Events Manager'],['Google Merchant Center εγκεκριμένο','Όλα τα 6 προϊόντα χωρίς σφάλματα στο feed'],['GA4 και Google Ads conversion tracking','Δοκιμαστική αγορά καταγράφεται και στα δύο'],['Πολιτική επιστροφών και στοιχεία εταιρείας ορατά','Απαραίτητο για έγκριση στο Merchant Center'],['Κριτικές πελατών στις σελίδες προϊόντων','Τουλάχιστον 5–10 ανά βασικό προϊόν'],['Κουτί δώρου / πακέτα προϊόντων','Ανεβάζει το μέσο καλάθι'],['6–10 βίντεο κάθετης μορφής (9:16)','Κτήμα, συγκομιδή, σπάσιμο, συνταγές'],['Email καλωσορίσματος και εγκαταλελειμμένου καλαθιού','Shopify Email ή Klaviyo'],['Μέθοδος πληρωμής στο Ads Manager και στο Google Ads','Με όριο δαπάνης λογαριασμού'],['Δοκιμή αγοράς από κινητό','Ταχύτητα, checkout, Apple/Google Pay']];
+let saved={};try{saved=JSON.parse(localStorage.getItem('karidi-check')||'{}')}catch(e){}
+$('checklist').innerHTML=CL.map((c,i)=>`<li><label><input type="checkbox" id="ck${i}" ${saved[i]?'checked':''}><span>${c[0]}<small>${c[1]}</small></span></label></li>`).join('');
+$('checklist').addEventListener('change',e=>{const i=e.target.id.slice(2);saved[i]=e.target.checked;try{localStorage.setItem('karidi-check',JSON.stringify(saved))}catch(err){}});
+
+window.addEventListener('resize',()=>{clearTimeout(window._rt);window._rt=setTimeout(run,150)});
+run();
+})();
+</script>
+</body>
+</html>
